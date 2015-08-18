@@ -1,0 +1,4 @@
+\\test-svc01\logs\Files
+\\test-svc02\logs\Files
+\\test-svc03\logs\Files
+\\test-web01\logs\Files
