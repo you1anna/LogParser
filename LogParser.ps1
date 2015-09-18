@@ -1,4 +1,4 @@
-
+﻿
 # LogParser v1.1 by Robin Miklinski
 
 # replace stuff like user=2783682?
@@ -40,6 +40,7 @@ $splitDelim = ']'
 $warnPattern = ".*WARN.*\s(?!$year).*[\s\D]*"
 $errorPattern = ".*ERROR.*\s(?!$year).*[\s\D]*"
 $guid = "[a-fA-F0-9]{8}-([a-fA-F0-9]{4}-){3}[a-fA-F0-9]{12}"
+$laterThan = [System.DateTime]::UtcNow.AddMinutes($minutesback * -1)
 
 if ($path) 
 {
@@ -96,8 +97,7 @@ Function Get-FolderSize
 }		
 function Get-Logs ($path)
 {	
-	$laterThan = [System.DateTime]::UtcNow.AddMinutes($minutesback * -1)
-	$logPaths = Gci -Path $path -Recurse  | ?{($_.Name -match "-error.log\b" -and $_.length -lt 5000kb -and $_.LastWriteTime -gt $laterThan)}
+	$logPaths = Gci -Path $path -Recurse  | ?{($_.Name -match "-error.log\b" -and $_.LastWriteTime -gt $laterThan)}
 	
 	return $logPaths
 }
@@ -116,10 +116,10 @@ function Scan ($path, $logPaths, $pattern)
 			$regexDateTime = New-Object System.Text.RegularExpressions.Regex "((?:\d{4})-\d{2}-\d{2}\s\d{2}:\d{2}:\d{2}(,\d{3})?)"
 			$matchDate = $regexDateTime.match($_)
 			if($matchDate.success){
-				$loglinedate = [System.DateTime]::ParseExact($matchDate, "yyyy-MM-dd HH:mm:ss,FFF", [System.Globalization.CultureInfo]::InvariantCulture)
-				if ($loglinedate -gt $laterThan){
+				$logLineDate = [System.DateTime]::ParseExact($matchDate, "yyyy-MM-dd HH:mm:ss,FFF", [System.Globalization.CultureInfo]::InvariantCulture)
+				if ($logLineDate -gt $laterThan){
 					$_ = Filter-String $_
-					[Array]$messageArr += [PSCustomObject]@{'date' = $($_.toString() -split ']')[0];'message' = $($_.toString() -split ']')[1]}
+					[Array]$messageArr += [PSCustomObject]@{'date' = $($_.toString() -split $splitDelim)[0];'message' = $($_.toString() -split $splitDelim)[1]}
 				}											
 			}
 		}
