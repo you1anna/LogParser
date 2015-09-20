@@ -43,6 +43,7 @@ $errorPattern = ".*ERROR.*\s(?!$year).*[\s\D]*"
 $guid = "[a-fA-F0-9]{8}-([a-fA-F0-9]{4}-){3}[a-fA-F0-9]{12}"
 $lv = '*LOG_VALUE*'
 $splitDelim = ']'
+$maxLogSize = 15MB
 
 if ($path) 
 {
@@ -101,8 +102,8 @@ function Get-Logs ($path)
 }
 function Filter-Size
 {
-	Write-Host "The following are too large to monitor, don't waste your time."	
-	Gci -Path $path -recurse | where {$_.length -gt 15MB} | sort length | ft -Property fullname, length -auto
+	Write-Host "The following files are too large to monitor:"	
+	Gci -Path $path -recurse | where {$_.length -gt $maxLogSize} | sort length | ft -Property fullname, length -auto
 }
 function Filter-String ([string]$text)
 {
@@ -131,16 +132,21 @@ function Scan ($path, $logPaths, $pattern)
 		}
 		else 
 		{
-			Write-Host "[Count: " $messageArr.length"]`n`nUnique..."
 			$vv = $messageArr | Group-Object Message | % { $_.count }
-			Write-Host -f Cyan $vv
+			Write-Host -f Cyan "Grouped message count: " $vv
+			$messageArr | Format-Table -Property Date, Message -AutoSize
+			
 			$filteredArr = $messageArr | Group-Object Message | % { $_.Group | sort Date | Select -Last 1 }
-			$filteredArr | % `
-			{ 	
-				Write-Host -f Green ("{0}]{1}" -f $_.Date, $_.Message)
+			if ($vv.length -gt 0) 
+			{
+				Write-Host "[Count: "$filteredArr.length"]`n`nUnique...`n"
+				$filteredArr | % `
+				{ 	
+					Write-Host -f Green ("{0}]{1}" -f $_.Date, $_.Message)
+				}
 			}
-		}
-	}	
+		}	
+	}
 }
 
 
