@@ -73,9 +73,9 @@ Function Run-Scan
 {
 	$logPaths = Get-Logs $path
 	Get-Size
-	Write-Host -f Red "`n --- ERRORS ---`n"
+	Write-Host -f Red "`n [ ----- ERRORS ----- ]`n`n"
 	Scan $path $logPaths $errorPattern
-	Write-Host -f Yellow "`n--- WARNS ---`n"
+	Write-Host -f Yellow "`n[ ----- WARNS ----- ]`n`n"
 	Scan $path $logPaths $warnPattern
 }
 Function Get-Size
@@ -102,7 +102,7 @@ function Get-Logs ($path)
 }
 function Filter-Size
 {
-	Write-Host "The following files are too large to monitor:"	
+	Write-Host -f Gray "The following files are too large to monitor:"	
 	Gci -Path $path -recurse | where {$_.length -gt $maxLogSize} | sort length | ft -Property fullname, length -auto
 }
 function Filter-String ([string]$text)
@@ -131,17 +131,23 @@ function Scan ($path, $logPaths, $pattern)
 		if ($verbose) {$messageArr | % { Write-Host -f Green ("{0}]{1}" -f $_.Date, $_.Message) }
 		}
 		else 
-		{
-			$vv = $messageArr | Group-Object Message | % { $_.count }
-			Write-Host -f Cyan "Grouped message count: " $vv
-			
+		{			
+#			$x = $messageArr | Group-Object Message | % { $_.Group }
 			$filteredArr = $messageArr | Group-Object Message | % { $_.Group | sort Date | Select -Last 1 }
-			if ($vv.length -gt 0) 
+			
+			[array]$messageGroupArr = @()			
+			$messageArr | Group-Object Message | % { $messageGroupArr += $_.count }			
+			$messageGroup = $messageArr | Group-Object Message | % { $_.count }			
+			if ($messageGroup.length -gt 0) 
 			{
-				Write-Host "[Count: "$filteredArr.length"]`n`nUnique...`n"
-				$filteredArr | % `
-				{ 	
-					Write-Host -f Green ("{0}]{1}" -f $_.Date, $_.Message)
+				Write-Host "`n["$filteredArr.length "unique entry groups]`n"
+				foreach ($groupCount in $messageGroupArr) 
+				{ 
+					$filteredArr | % `
+					{ 	
+						Write-Host -f Green ("{0}]{1}" -f $_.Date, $_.Message) 
+						if ($groupCount -gt 1) { Write-Host -f Cyan "[$groupCount]" }
+					}
 				}
 			}
 		}	
