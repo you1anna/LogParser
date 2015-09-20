@@ -32,15 +32,17 @@ Param
    [string]$env,
    [int]$minutesback,
    [bool]$purge,
-   [bool]$verbose
+   [bool]$verbose,
+   [bool]$filter
 )
 
 $year = (get-date).year
-$splitDelim = ']'
+$laterThan = [System.DateTime]::UtcNow.AddMinutes($minutesback * -1)
 $warnPattern = ".*WARN.*\s(?!$year).*[\s\D]*"
 $errorPattern = ".*ERROR.*\s(?!$year).*[\s\D]*"
 $guid = "[a-fA-F0-9]{8}-([a-fA-F0-9]{4}-){3}[a-fA-F0-9]{12}"
-$laterThan = [System.DateTime]::UtcNow.AddMinutes($minutesback * -1)
+$lv = '*LOG_VALUE*'
+$splitDelim = ']'
 
 if ($path) 
 {
@@ -83,30 +85,32 @@ Function Get-Size
 }
 Function Get-FolderSize 
 {
-	Begin 
-	{
-		$fso = New-Object -comobject Scripting.FileSystemObject
-	}
-	Process
-	{
-	    $folderpath = $input.fullname
+	Begin {$fso = New-Object -comobject Scripting.FileSystemObject}
+	Process{
+	    $folderpath = $input.FullName
 	    $folder = $fso.GetFolder($folderpath)
 	    $size = $folder.size
 	    [PSCustomObject]@{'Folder Name' = $folderpath;'Size' = [math]::Round(($size / 1Mb),1)} 
 	} 
-}		
+}
 function Get-Logs ($path)
-{	
-	$logPaths = Gci -Path $path -Recurse  | ?{($_.Name -match "-error.log\b" -and $_.LastWriteTime -gt $laterThan)}
-	
+{		
+	$logPaths = Gci -Path $path -Recurse  | ?{($_.Name -match "-error.log\b" -and $_.LastWriteTime -gt $laterThan -and $_.length -lt 15MB)}
+
 	return $logPaths
+}
+function Filter-Size
+{
+	Write-Host "The following are too large to monitor, don't waste your time."	
+	Gci -Path $path -recurse | where {$_.length -gt 15MB} | sort length | ft -Property fullname, length -auto
 }
 function Filter-String ([string]$text)
 {
-	return $text -replace ('user=\d+','user=...') -replace ('Job#\d+\D\d+','SEE_LOGS')
+	return $text -replace ('\d{6,}', $lv) -replace ('Job#\d+\D\d+', $lv) -replace ('# \d{3,}', $lv) -replace ($guid, $lv)
 }
 function Scan ($path, $logPaths, $pattern) 
 {
+	Filter-Size
 	$logPaths | % `
 	{ 
 		$file = $_.FullName
@@ -118,23 +122,22 @@ function Scan ($path, $logPaths, $pattern)
 			if($matchDate.success){
 				$logLineDate = [System.DateTime]::ParseExact($matchDate, "yyyy-MM-dd HH:mm:ss,FFF", [System.Globalization.CultureInfo]::InvariantCulture)
 				if ($logLineDate -gt $laterThan){
-					$_ = Filter-String $_
-					[Array]$messageArr += [PSCustomObject]@{'date' = $($_.toString() -split $splitDelim)[0];'message' = $($_.toString() -split $splitDelim)[1]}
+					if ($filter) { $_ = Filter-String $_ }
+					[Array]$messageArr += [PSCustomObject]@{'date' = $($_ -split $splitDelim)[0];'message' = $($_ -split $splitDelim)[1]}
 				}											
 			}
 		}
-		if ($verbose) 
-		{
-			$messageArr | % { Write-Host -f Green ("{0}]{1}" -f $_.Date, $_.Message) }
+		if ($verbose) {$messageArr | % { Write-Host -f Green ("{0}]{1}" -f $_.Date, $_.Message) }
 		}
 		else 
 		{
 			Write-Host "[Count: " $messageArr.length"]`n`nUnique..."
-			$countArr = $($messageArr | Group-Object Message | % { $_.Group | sort Date }).count
-			$FilteredArr = $messageArr | Group-Object Message | % { $_.Group | sort Date | Select -Last 1 }
-			$FilteredArr | % `
-			{ 
-				Write-Host -f Green ("{0}]{1}" -f $_.Date, $_.Message) $countArr.count
+			$vv = $messageArr | Group-Object Message | % { $_.count }
+			Write-Host -f Cyan $vv
+			$filteredArr = $messageArr | Group-Object Message | % { $_.Group | sort Date | Select -Last 1 }
+			$filteredArr | % `
+			{ 	
+				Write-Host -f Green ("{0}]{1}" -f $_.Date, $_.Message)
 			}
 		}
 	}	
