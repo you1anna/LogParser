@@ -134,7 +134,6 @@ function Scan ($path, $logPaths, $pattern)
 		{
 			$vv = $messageArr | Group-Object Message | % { $_.count }
 			Write-Host -f Cyan "Grouped message count: " $vv
-			$messageArr | Format-Table -Property Date, Message -AutoSize
 			
 			$filteredArr = $messageArr | Group-Object Message | % { $_.Group | sort Date | Select -Last 1 }
 			if ($vv.length -gt 0) 
