@@ -3,7 +3,8 @@
 
 # replace stuff like user=2783682?
 # filter large files
-# make regex get stacktrace
+# group count incorrect
+# size filter getting wrong logs
 
 Set-ExecutionPolicy Unrestricted
 
@@ -73,7 +74,7 @@ Function Run-Scan
 {
 	$logPaths = Get-Logs $path
 	Get-Size
-	Write-Host -f Red "`n [ ----- ERRORS ----- ]`n`n"
+	Write-Host -f Red "`n[ ----- ERRORS ----- ]`n`n"
 	Scan $path $logPaths $errorPattern
 	Write-Host -f Yellow "`n[ ----- WARNS ----- ]`n`n"
 	Scan $path $logPaths $warnPattern
@@ -103,7 +104,7 @@ function Get-Logs ($path)
 function Filter-Size
 {
 	Write-Host -f Gray "The following files are too large to monitor:"	
-	Gci -Path $path -recurse | where {$_.length -gt $maxLogSize} | sort length | ft -Property fullname, length -auto
+	Gci -Path $path -recurse | where {$_.Name -match "-error.log\b" -and $_.length -gt $maxLogSize} | sort length | ft -Property fullname, length -auto
 }
 function Filter-String ([string]$text)
 {
@@ -140,7 +141,7 @@ function Scan ($path, $logPaths, $pattern)
 			$messageGroup = $messageArr | Group-Object Message | % { $_.count }			
 			if ($messageGroup.length -gt 0) 
 			{
-				Write-Host "`n["$filteredArr.length "unique entry groups]`n"
+				Write-Host -f Cyan "`n["$filteredArr.length "message(s) with > 1 entry]`n"
 				foreach ($groupCount in $messageGroupArr) 
 				{ 
 					$filteredArr | % `
