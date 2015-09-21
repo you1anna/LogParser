@@ -97,7 +97,7 @@ Function Get-FolderSize
 }
 function Get-Logs ($path)
 {		
-	$logPaths = Gci -Path $path -Recurse  | ?{($_.Name -match "-error.log\b" -and $_.LastWriteTime -gt $laterThan -and $_.length -lt 15MB)}
+	$logPaths = Gci -Path $path -Recurse  | ?{($_.Name -match "-error.log\b" -and $_.LastWriteTime -gt $laterThan -and $_.length -lt $maxLogSize)}
 
 	return $logPaths
 }
@@ -141,7 +141,7 @@ function Scan ($path, $logPaths, $pattern)
 			$messageGroup = $messageArr | Group-Object Message | % { $_.count }			
 			if ($messageGroup.length -gt 0) 
 			{
-				Write-Host -f Cyan "`n["$filteredArr.length "message(s) with > 1 entry]`n"
+				Write-Host -f Cyan "`n["$filteredArr.length"messages with multiple entries]`n"
 				foreach ($groupCount in $messageGroupArr) 
 				{ 
 					$filteredArr | % `
