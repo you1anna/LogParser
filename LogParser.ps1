@@ -5,6 +5,7 @@
 # filter large files
 # group count incorrect
 # size filter getting wrong logs
+# move following files size'' to single call - and fix?
 
 Set-ExecutionPolicy Unrestricted
 
@@ -103,8 +104,8 @@ function Get-Logs ($path)
 }
 function Filter-Size
 {
-	Write-Host -f Gray "The following files are too large to monitor:"	
-	Gci -Path $path -recurse | where {$_.Name -match "-error.log\b" -and $_.length -gt $maxLogSize} | sort length | ft -Property fullname, length -auto
+	if ($_ -ne $null) {Write-Host -f Gray "The following files are too large to monitor:"}
+	Gci -Path $path -recurse | where {$_ -ne $null -and $_.Name -match "-error.log\b" -and $_.length -gt $maxLogSize} | sort length | ft -Property fullname, length -auto
 }
 function Filter-String ([string]$text)
 {
@@ -114,22 +115,27 @@ function Scan ($path, $logPaths, $pattern)
 {
 	Filter-Size
 	$logPaths | % `
-	{ 
-		$file = $_.FullName
-		Write-Host "`n[$file]"
-		Get-Content $file | Select-String -Pattern $pattern -CaseSensitive -AllMatches | % `
-		{ 	
-			$regexDateTime = New-Object System.Text.RegularExpressions.Regex "((?:\d{4})-\d{2}-\d{2}\s\d{2}:\d{2}:\d{2}(,\d{3})?)"
-			$matchDate = $regexDateTime.match($_)
-			if($matchDate.success){
-				$logLineDate = [System.DateTime]::ParseExact($matchDate, "yyyy-MM-dd HH:mm:ss,FFF", [System.Globalization.CultureInfo]::InvariantCulture)
-				if ($logLineDate -gt $laterThan){
-					if ($filter) { $_ = Filter-String $_ }
-					[Array]$messageArr += [PSCustomObject]@{'date' = $($_ -split $splitDelim)[0];'message' = $($_ -split $splitDelim)[1]}
-				}											
+	{
+		if ($_ -ne $null) 
+		{
+			$file = $_.FullName
+			Write-Host "`n[$file]"
+		
+			Get-Content $file | Select-String -Pattern $pattern -CaseSensitive -AllMatches | % `
+			{ 	
+				$regexDateTime = New-Object System.Text.RegularExpressions.Regex "((?:\d{4})-\d{2}-\d{2}\s\d{2}:\d{2}:\d{2}(,\d{3})?)"
+				$matchDate = $regexDateTime.match($_)
+				if($matchDate.success){
+					$logLineDate = [System.DateTime]::ParseExact($matchDate, "yyyy-MM-dd HH:mm:ss,FFF", [System.Globalization.CultureInfo]::InvariantCulture)
+					if ($logLineDate -gt $laterThan){
+						if ($filter) { $_ = Filter-String $_ }
+						[Array]$messageArr += [PSCustomObject]@{'date' = $($_ -split $splitDelim)[0];'message' = $($_ -split $splitDelim)[1]}
+					}											
+				}
 			}
-		}
+			
 		if ($verbose) {$messageArr | % { Write-Host -f Green ("{0}]{1}" -f $_.Date, $_.Message) }
+		}
 		}
 		else 
 		{			
