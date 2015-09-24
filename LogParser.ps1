@@ -6,6 +6,7 @@
 # group count incorrect
 # size filter getting wrong logs
 # move following files size'' to single call - and fix?
+# improve filter-size
 
 Set-ExecutionPolicy Unrestricted
 
@@ -104,7 +105,7 @@ function Get-Logs ($path)
 }
 function Filter-Size
 {
-	if ($_ -ne $null) {Write-Host -f Gray "The following files are too large to monitor:"}
+	Write-Host -f Gray "The following files are too large to monitor:"
 	Gci -Path $path -recurse | where {$_ -ne $null -and $_.Name -match "-error.log\b" -and $_.length -gt $maxLogSize} | sort length | ft -Property fullname, length -auto
 }
 function Filter-String ([string]$text)
@@ -132,10 +133,8 @@ function Scan ($path, $logPaths, $pattern)
 						[Array]$messageArr += [PSCustomObject]@{'date' = $($_ -split $splitDelim)[0];'message' = $($_ -split $splitDelim)[1]}
 					}											
 				}
-			}
-			
+			}	
 		if ($verbose) {$messageArr | % { Write-Host -f Green ("{0}]{1}" -f $_.Date, $_.Message) }
-		}
 		}
 		else 
 		{			
@@ -145,11 +144,9 @@ function Scan ($path, $logPaths, $pattern)
 			[array]$messageGroupArr = @()			
 			$messageArr | Group-Object Message | % { $messageGroupArr += $_.count }			
 			$messageGroup = $messageArr | Group-Object Message | % { $_.count }			
-			if ($messageGroup.length -gt 0) 
-			{
+			if ($messageGroup.length -gt 0){
 				Write-Host -f Cyan "`n["$filteredArr.length"messages with multiple entries]`n"
-				foreach ($groupCount in $messageGroupArr) 
-				{ 
+				foreach ($groupCount in $messageGroupArr){ 
 					$filteredArr | % `
 					{ 	
 						Write-Host -f Green ("{0}]{1}" -f $_.Date, $_.Message) 
@@ -157,7 +154,8 @@ function Scan ($path, $logPaths, $pattern)
 					}
 				}
 			}
-		}	
+		}
+		}
 	}
 }
 
