@@ -3,7 +3,7 @@
 
 # replace stuff like user=2783682?
 # filter large files
-# group count incorrect
+# group count incorrect /# with multiple entries
 # size filter getting wrong logs
 # move following files size'' to single call - and fix?
 # improve filter-size
@@ -107,6 +107,7 @@ function Filter-Size
 {
 	Write-Host -f Gray "The following files are too large to monitor:"
 	Gci -Path $path -recurse | where {$_ -ne $null -and $_.Name -match "-error.log\b" -and $_.length -gt $maxLogSize} | sort length | ft -Property fullname, length -auto
+	Write-Host -f Gray "`n---"
 }
 function Filter-String ([string]$text)
 {
@@ -130,22 +131,22 @@ function Scan ($path, $logPaths, $pattern)
 					$logLineDate = [System.DateTime]::ParseExact($matchDate, "yyyy-MM-dd HH:mm:ss,FFF", [System.Globalization.CultureInfo]::InvariantCulture)
 					if ($logLineDate -gt $laterThan){
 						if ($filter) { $_ = Filter-String $_ }
-						[Array]$messageArr += [PSCustomObject]@{'date' = $($_ -split $splitDelim)[0];'message' = $($_ -split $splitDelim)[1]}
+						[Array]$msgArr += [PSCustomObject]@{'date' = $($_ -split $splitDelim)[0];'message' = $($_ -split $splitDelim)[1]}
 					}											
 				}
 			}	
-		if ($verbose) {$messageArr | % { Write-Host -f Green ("{0}]{1}" -f $_.Date, $_.Message) }
+		if ($verbose) {$msgArr | % { Write-Host -f Green ("{0}]{1}" -f $_.Date, $_.Message) }
 		}
 		else 
 		{			
-#			$x = $messageArr | Group-Object Message | % { $_.Group }
-			$filteredArr = $messageArr | Group-Object Message | % { $_.Group | sort Date | Select -Last 1 }
+#			$x = $msgArr | Group-Object Message | % { $_.Group }
+			$filteredArr = $msgArr | Group-Object Message | % { $_.Group | sort Date | Select -Last 1 }
 			
 			[array]$messageGroupArr = @()			
-			$messageArr | Group-Object Message | % { $messageGroupArr += $_.count }			
-			$messageGroup = $messageArr | Group-Object Message | % { $_.count }			
+			$msgArr | Group-Object Message | % { $messageGroupArr += $_.count }			
+			$messageGroup = $msgArr | Group-Object Message | % { $_.count }			
 			if ($messageGroup.length -gt 0){
-				Write-Host -f Cyan "`n["$filteredArr.length"messages with multiple entries]`n"
+				Write-Host -f Cyan "`n["$filteredArr.length"message types with multiple entries]`n"
 				foreach ($groupCount in $messageGroupArr){ 
 					$filteredArr | % `
 					{ 	
