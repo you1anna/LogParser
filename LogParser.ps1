@@ -6,31 +6,30 @@
 # group count incorrect /# with multiple entries
 # size filter getting wrong logs
 # move following files size'' to single call - and fix?
-# improve filter-size
 
 Set-ExecutionPolicy Unrestricted
 
  <#
     .SYNOPSIS 
-      Parses log files for WARN and ERROR counts
+      Scans log files for WARN and ERROR messages
     .EXAMPLE
 	> . .\logParserNew.ps1
-	> Start-Monitor -env staging -minutesback 6
-    > Start-Monitor -path C:\dev\Huddle\logs -purge 10
+	> Start-Monitor -env staging -minutesback 30
+    > Start-Monitor -path D:\dev\Huddle\logs -purge 10
 	 
-    Specify either a path or environment parameters, 
-	env will read environment paths from a local text file
+    Run this script with either a path or environment param. 
+	Env will scan environment paths from a local text file
 	and return unique entries of warnings and errors for a
-	configurable time period (minutesback parameter). 
+	configurable time period (minutesback param). 
 	Use -purge to remove existing log files (only works with -path).
-	Note: -timeout and -cycles are depricated in this version.
+	-timeout and -cycles are depricated in this version.
   #>
 
 function Start-Monitor {
 
 Param
 (
-   [ValidateScript({Test-Path $_ -PathType 'Container'})] 
+   [ValidateScript({Test-Path $_ -PathType Container})] 
    [string]$path,
    [string]$env,
    [int]$minutesback,
@@ -50,7 +49,11 @@ $maxLogSize = 15MB
 
 if ($path) 
 {
-	Run-Scan
+    if(!(Test-Path $path -PathType Container))
+    {
+        throw "Folder not found: $path"
+    }
+	else { Run-Scan }
 }
 if ($env)
 {	
@@ -58,9 +61,15 @@ if ($env)
 	$locations = Get-Content $currentDir\$env.txt
 	foreach ($location in $locations) 
 	{
-		$path = $location
-		Write-Host -f Cyan "`nScanning..." $path
-		Run-Scan
+	    if(!(Test-Path $location -PathType Container))
+    	{
+        	Write-Host "Folder not found: $location"
+    	}
+		else { 
+			$path = $location
+			Run-Scan
+			Write-Host -f Cyan "`n`n-----------------------------------------"
+			Write-Host -f Cyan "Scanning..." $path "`n"}
 	}
 }	
 if ($purge)
@@ -99,15 +108,19 @@ Function Get-FolderSize
 }
 function Get-Logs ($path)
 {		
-	$logPaths = Gci -Path $path -Recurse  | ?{($_.Name -match "-error.log\b" -and $_.LastWriteTime -gt $laterThan -and $_.length -lt $maxLogSize)}
+	$logPaths = Gci -Path $path -Recurse  | ?{($_ -ne $null -and $_.Name -match "-error.log\b" -and $_.LastWriteTime -gt $laterThan -and $_.length -lt $maxLogSize)}
 
 	return $logPaths
 }
 function Filter-Size
 {
-	Write-Host -f Gray "The following files are too large to monitor:"
-	Gci -Path $path -recurse | where {$_ -ne $null -and $_.Name -match "-error.log\b" -and $_.length -gt $maxLogSize} | sort length | ft -Property fullname, length -auto
-	Write-Host -f Gray "`n---"
+	$logs = Get-Logs $path
+	if ($logs.count -gt 0) 
+	{ 
+		Write-Host -f Gray "The following files are too large to monitor:"
+		$logs | sort length | ft -Property fullname, length -auto
+		Write-Host -f Gray "`n---"
+	}
 }
 function Filter-String ([string]$text)
 {
@@ -121,8 +134,7 @@ function Scan ($path, $logPaths, $pattern)
 		if ($_ -ne $null) 
 		{
 			$file = $_.FullName
-			Write-Host "`n[$file]"
-		
+			Write-Host "`n[$file]"		
 			Get-Content $file | Select-String -Pattern $pattern -CaseSensitive -AllMatches | % `
 			{ 	
 				$regexDateTime = New-Object System.Text.RegularExpressions.Regex "((?:\d{4})-\d{2}-\d{2}\s\d{2}:\d{2}:\d{2}(,\d{3})?)"
@@ -139,14 +151,13 @@ function Scan ($path, $logPaths, $pattern)
 		}
 		else 
 		{			
-#			$x = $msgArr | Group-Object Message | % { $_.Group }
 			$filteredArr = $msgArr | Group-Object Message | % { $_.Group | sort Date | Select -Last 1 }
 			
 			[array]$messageGroupArr = @()			
 			$msgArr | Group-Object Message | % { $messageGroupArr += $_.count }			
 			$messageGroup = $msgArr | Group-Object Message | % { $_.count }			
 			if ($messageGroup.length -gt 0){
-				Write-Host -f Cyan "`n["$filteredArr.length"message types with multiple entries]`n"
+				if ($filteredArr.length -gt 0) { Write-Host -f Cyan ("`n[{0}{1}]`n" -f $filteredArr.length, " message types with multiple entries") }
 				foreach ($groupCount in $messageGroupArr){ 
 					$filteredArr | % `
 					{ 	
