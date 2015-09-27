@@ -1,10 +1,7 @@
 ﻿
 # LogParser v1.1 by Robin Miklinski
 
-# replace stuff like user=2783682?
-# filter large files
 # group count incorrect /# with multiple entries
-# size filter getting wrong logs
 # move following files size'' to single call - and fix?
 
 Set-ExecutionPolicy Unrestricted
