@@ -55,7 +55,7 @@ if ($path)
 if ($env)
 {	
 	$currentDir = $PWD.Path
-	$locations = Get-Content $currentDir\$env.txt
+	$locations = Get-Content $currentDir\env\$env.txt
 	foreach ($location in $locations) 
 	{
 	    if(!(Test-Path $location -PathType Container))
@@ -115,7 +115,8 @@ function Filter-Size
 	if ($logs.count -gt 0) 
 	{ 
 		Write-Host -f Gray "The following files are too large to monitor:"
-		$logs | sort length | ft -Property fullname, length -auto
+		$logs | sort length | ft -Property fullname, @{ Expression = {$Host.ui.rawui.ForegroundColor = Grey; length}}
+							# ft -Property name, @{label = "alert" ; Expression = { $Host.ui.rawui.ForegroundColor = "cyan" ; $_.cpu }
 		Write-Host -f Gray "`n---"
 	}
 }
