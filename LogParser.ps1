@@ -119,11 +119,15 @@ function Filter-Size
 		Write-Host -f Gray "The following files are too large to monitor:"
 #		$logs | sort length | ft -Property fullname, @{label = "Size" ; Expression = {$Host.ui.rawui.ForegroundColor = White; $_.length}} -auto
 #		$logs | sort length | ft -Property fullname, @{'Fullname' = $_.name; 'Size' = {$Host.ui.rawui.ForegroundColor = Red; [math]::Round((length / 1Mb),1)}}
-		
+#							 ft ProcessName, @{Label="TotalRunningTime"; Expression={$_.StartTime}}
 		$logs | sort length | ft -Property fullname, @{
-														label = "LogSize"; 
-													  	Expression = {$Host.ui.rawui.ForegroundColor = "red"}
-													  },length 
+														label = "Size(MB)"; 
+													  	Expression = 
+														{
+															$Host.ui.rawui.ForegroundColor = "red"; 
+															[math]::Round(($_.length / 1Mb),1)
+														}
+													  } -AutoSize
 		
 							# ft -Property fullname, length -auto 
 							# ft -Property name, @{label = "alert" ; Expression = { $Host.ui.rawui.ForegroundColor = "cyan" ; $_.length }
