@@ -84,9 +84,9 @@ Function Run-Scan
 {
 	$logPaths = Get-Logs $path
 	Get-Size
-	Write-Host -f Red "`n[ ----- ERRORS ----- ]`n`n"
+	Write-Host -f White -b Red "`n[ ------- ERRORS ------- ]`n`n"
 	Scan $path $logPaths $errorPattern
-	Write-Host -f Yellow "`n[ ----- WARNS ----- ]`n`n"
+	Write-Host -f Black -b Yellow "`n[ ------- WARNS ------- ]`n`n"
 	Scan $path $logPaths $warnPattern
 }
 Function Get-Size
@@ -117,9 +117,18 @@ function Filter-Size
 	if ($logs.count -gt 0) 
 	{ 
 		Write-Host -f Gray "The following files are too large to monitor:"
-		$logs | sort length | ft -Property fullname, @{label = "Size" ; Expression = {$Host.ui.rawui.ForegroundColor = Grey; length}}
-							# ft -Property name, @{label = "alert" ; Expression = { $Host.ui.rawui.ForegroundColor = "cyan" ; $_.cpu }
-		Write-Host -f Gray "`n---"
+#		$logs | sort length | ft -Property fullname, @{label = "Size" ; Expression = {$Host.ui.rawui.ForegroundColor = White; $_.length}} -auto
+#		$logs | sort length | ft -Property fullname, @{'Fullname' = $_.name; 'Size' = {$Host.ui.rawui.ForegroundColor = Red; [math]::Round((length / 1Mb),1)}}
+		
+		$logs | sort length | ft -Property fullname, @{
+														label = "LogSize"; 
+													  	Expression = {$Host.ui.rawui.ForegroundColor = "red"}
+													  },length 
+		
+							# ft -Property fullname, length -auto 
+							# ft -Property name, @{label = "alert" ; Expression = { $Host.ui.rawui.ForegroundColor = "cyan" ; $_.length }
+		Write-Host -f Gray  "`n---"
+		$Host.ui.rawui.ForegroundColor = "white"
 	}
 }
 function Filter-String ([string]$text)
