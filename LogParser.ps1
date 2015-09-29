@@ -4,6 +4,7 @@
 # group count incorrect /# with multiple entries
 # move following files size'' to single call - and fix?
 # filter-size needs fixing
+#toolarge files in red
 
 Set-ExecutionPolicy Unrestricted
 
@@ -116,7 +117,7 @@ function Filter-Size
 	if ($logs.count -gt 0) 
 	{ 
 		Write-Host -f Gray "The following files are too large to monitor:"
-		$logs | sort length | ft -Property fullname, @{ Expression = {$Host.ui.rawui.ForegroundColor = Grey; length}}
+		$logs | sort length | ft -Property fullname, @{label = "Size" ; Expression = {$Host.ui.rawui.ForegroundColor = Grey; length}}
 							# ft -Property name, @{label = "alert" ; Expression = { $Host.ui.rawui.ForegroundColor = "cyan" ; $_.cpu }
 		Write-Host -f Gray "`n---"
 	}
