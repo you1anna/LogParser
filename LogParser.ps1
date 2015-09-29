@@ -3,6 +3,7 @@
 
 # group count incorrect /# with multiple entries
 # move following files size'' to single call - and fix?
+# filter-size needs fixing
 
 Set-ExecutionPolicy Unrestricted
 
@@ -105,7 +106,7 @@ Function Get-FolderSize
 }
 function Get-Logs ($path)
 {		
-	$logPaths = Gci -Path $path -Recurse  | ?{($_ -ne $null -and $_.Name -match "-error.log\b" -and $_.LastWriteTime -gt $laterThan -and $_.length -lt $maxLogSize)}
+	$logPaths = Gci -Path $path -Recurse  | ? {($_ -ne $null -and $_.Name -match "-error.log\b" -and $_.LastWriteTime -gt $laterThan -and $_.length -lt $maxLogSize)}
 
 	return $logPaths
 }
@@ -160,11 +161,11 @@ function Scan ($path, $logPaths, $pattern)
 					$filteredArr | % `
 					{ 	
 						Write-Host -f Green ("{0}]{1}" -f $_.Date, $_.Message) 
-						if ($groupCount -gt 1) { Write-Host -f Cyan "[$groupCount]" }
+						if ($groupCount -gt 1) { Write-Host -f Cyan "[$groupCount similar]" }
 					}
 				}
 			}
-		}
+		  }
 		}
 	}
 }
