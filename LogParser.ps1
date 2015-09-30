@@ -53,7 +53,11 @@ if ($path)
     {
         throw "Folder not found: $path"
     }
-	else { Run-Scan }
+	else { 
+	Run-Scan 
+	Write-Host -f Cyan "`n`n-----------------------------------------"
+	Write-Host -f Cyan "Scanning..." $path "`n"
+	}
 }
 if ($env)
 {	
@@ -66,10 +70,10 @@ if ($env)
         	throw "Folder not found: $location"
     	}
 		else { 
-			$path = $location
-			Run-Scan
-			Write-Host -f Cyan "`n`n-----------------------------------------"
-			Write-Host -f Cyan "Scanning..." $path "`n"}
+		$path = $location
+		Run-Scan
+		Write-Host -f Cyan "`n`n-----------------------------------------"
+		Write-Host -f Cyan "Scanning..." $path "`n"}
 	}
 }	
 if ($purge)
@@ -84,15 +88,26 @@ if ($purge)
 Function Run-Scan 
 {
 	$logPaths = Get-Logs $path
-	Get-Size
-	$h = Get-Host
-	$win = $h.ui.rawui.windowsize
-	$width = $win.width / 2
-	
-	Write-Host -f White -b Red "`n[ ------- ERRORS ------- ]`n`n"
+	Get-Size	
+	$errorStrip = Write-Lines "ERRORS"
+	Write-Host -f Red "`n$errorStrip`n`n"
 	Scan $path $logPaths $errorPattern
-	Write-Host -f Black -b Yellow "`n[ ------- WARNS ------- ]`n`n"
+	$warnStrip = Write-Lines "WARNS"
+	Write-Host -f Yellow "`n$warnStrip`n`n"
 	Scan $path $logPaths $warnPattern
+}
+function Write-Lines ($inputStr)
+{
+	$hosta = Get-Host
+	$win = $hosta.ui.rawui.windowsize
+	[int]$width = ($win.width / 2) - 8
+	if ($width -gt 0)
+	{ 
+		$n = "-"
+		for ($i = 0; $i -le $width; $i++){ $n = $n + "-" }
+	} 
+	[string]$text = "[ " + $n + " $inputStr " + $n + " ]"	
+	return $text
 }
 Function Get-Size
 {
@@ -104,10 +119,10 @@ Function Get-FolderSize
 {
 	Begin {$fso = New-Object -comobject Scripting.FileSystemObject}
 	Process{
-	    $folderpath = $input.FullName
-	    $folder = $fso.GetFolder($folderpath)
-	    $size = $folder.size
-	    [PSCustomObject]@{'Folder Name' = $folderpath;'Size' = [math]::Round(($size / 1Mb),1)}
+	$folderpath = $input.FullName
+	$folder = $fso.GetFolder($folderpath)
+	$size = $folder.size
+	[PSCustomObject]@{'Folder Name' = $folderpath;'Size' = [math]::Round(($size / 1Mb),1)}
 	}
 }
 function Get-Logs ($path)
@@ -129,8 +144,7 @@ function Filter-Size
 		{
 			$Host.ui.rawui.ForegroundColor = "Gray"; 
 			$x = ([math]::Round(($_.length / 1Mb),1))
-			if ($x -ge 20) { $Host.ui.rawui.ForegroundColor = "red" ; $_.length }
-			else { $Host.ui.rawui.ForegroundColor = "gray" ; $_.length }
+			if ($x -ge 20) { $Host.ui.rawui.ForegroundColor = "gray"; $_.length }
 		}
 	} -Auto
 	Write-Host "`n---"
