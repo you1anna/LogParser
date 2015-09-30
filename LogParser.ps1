@@ -143,8 +143,8 @@ function Filter-Size
 	  	Expression = 
 		{
 			$Host.ui.rawui.ForegroundColor = "Gray"; 
-			$x = ([math]::Round(($_.length / 1Mb),1))
-			if ($x -ge 20) { $Host.ui.rawui.ForegroundColor = "gray"; $_.length }
+			$lengthmb = ([math]::Round(($_.length / 1Mb),1))
+			if ($lengthmb -ge 20) { $Host.ui.rawui.ForegroundColor = "gray"; $lengthmb }
 		}
 	} -Auto
 	Write-Host "`n---"
