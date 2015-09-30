@@ -5,6 +5,7 @@
 # move following files size'' to single call - and fix?
 # filter-size needs fixing
 #toolarge files in red
+# set banner to ui width
 
 Set-ExecutionPolicy Unrestricted
 
@@ -102,8 +103,8 @@ Function Get-FolderSize
 	    $folderpath = $input.FullName
 	    $folder = $fso.GetFolder($folderpath)
 	    $size = $folder.size
-	    [PSCustomObject]@{'Folder Name' = $folderpath;'Size' = [math]::Round(($size / 1Mb),1)} 
-	} 
+	    [PSCustomObject]@{'Folder Name' = $folderpath;'Size' = [math]::Round(($size / 1Mb),1)}
+	}
 }
 function Get-Logs ($path)
 {		
@@ -113,27 +114,7 @@ function Get-Logs ($path)
 }
 function Filter-Size
 {
-	$logs = Get-Logs $path
-	if ($logs.count -gt 0) 
-	{ 
-		Write-Host -f Gray "The following files are too large to monitor:"
-#		$logs | sort length | ft -Property fullname, @{label = "Size" ; Expression = {$Host.ui.rawui.ForegroundColor = White; $_.length}} -auto
-#		$logs | sort length | ft -Property fullname, @{'Fullname' = $_.name; 'Size' = {$Host.ui.rawui.ForegroundColor = Red; [math]::Round((length / 1Mb),1)}}
-#							 ft ProcessName, @{Label="TotalRunningTime"; Expression={$_.StartTime}}
-		$logs | sort length | ft -Property fullname, @{
-														label = "Size(MB)"; 
-													  	Expression = 
-														{
-															$Host.ui.rawui.ForegroundColor = "red"; 
-															[math]::Round(($_.length / 1Mb),1)
-														}
-													  } -AutoSize
-		
-							# ft -Property fullname, length -auto 
-							# ft -Property name, @{label = "alert" ; Expression = { $Host.ui.rawui.ForegroundColor = "cyan" ; $_.length }
-		Write-Host -f Gray  "`n---"
-		$Host.ui.rawui.ForegroundColor = "white"
-	}
+	$logs = Gci -Path $path -Recurse  | ? {($_ -ne $null -and $_.Name -match "-error.log\b" -and $_.length -ge $maxLogSize)}
 }
 function Filter-String ([string]$text)
 {
