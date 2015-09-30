@@ -115,6 +115,21 @@ function Get-Logs ($path)
 function Filter-Size
 {
 	$logs = Gci -Path $path -Recurse  | ? {($_ -ne $null -and $_.Name -match "-error.log\b" -and $_.length -ge $maxLogSize)}
+	if ($logs.count -gt 0) 
+	{ 
+		$initialColor = $Host.ui.rawui.ForegroundColor
+		Write-Host -f Gray "The following files are too large to monitor:"
+		$logs | sort length | 
+		ft -Property fullname, @{ label = "Size(mb)"; 
+	  	Expression = 
+		{
+			$Host.ui.rawui.ForegroundColor = "Gray"; 
+			[math]::Round(($_.length / 1Mb),1)
+		}
+	} -Auto
+	Write-Host "`n---"
+	$Host.ui.rawui.ForegroundColor = $initialColor
+	}
 }
 function Filter-String ([string]$text)
 {
