@@ -63,7 +63,7 @@ if ($env)
 	{
 	    if(!(Test-Path $location -PathType Container))
     	{
-        	Write-Host "Folder not found: $location"
+        	throw "Folder not found: $location"
     	}
 		else { 
 			$path = $location
@@ -85,6 +85,10 @@ Function Run-Scan
 {
 	$logPaths = Get-Logs $path
 	Get-Size
+	$h = Get-Host
+	$win = $h.ui.rawui.windowsize
+	$width = $win.width / 2
+	
 	Write-Host -f White -b Red "`n[ ------- ERRORS ------- ]`n`n"
 	Scan $path $logPaths $errorPattern
 	Write-Host -f Black -b Yellow "`n[ ------- WARNS ------- ]`n`n"
@@ -124,7 +128,9 @@ function Filter-Size
 	  	Expression = 
 		{
 			$Host.ui.rawui.ForegroundColor = "Gray"; 
-			[math]::Round(($_.length / 1Mb),1)
+			$x = ([math]::Round(($_.length / 1Mb),1))
+			if ($x -ge 20) { $Host.ui.rawui.ForegroundColor = "red" ; $_.length }
+			else { $Host.ui.rawui.ForegroundColor = "gray" ; $_.length }
 		}
 	} -Auto
 	Write-Host "`n---"
