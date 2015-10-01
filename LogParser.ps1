@@ -4,8 +4,7 @@
 # group count incorrect /# with multiple entries
 # move following files size'' to single call - and fix?
 # filter-size needs fixing
-#toolarge files in red
-# set banner to ui width
+# set message group colour according to count
 
 Set-ExecutionPolicy Unrestricted
 
@@ -144,7 +143,7 @@ function Filter-Size
 		{
 			$Host.ui.rawui.ForegroundColor = "Gray"; 
 			$lengthmb = ([math]::Round(($_.length / 1Mb),1))
-			if ($lengthmb -ge 20) { $Host.ui.rawui.ForegroundColor = "gray"; $lengthmb }
+			if ($lengthmb -ge $maxLogSize) { $Host.ui.rawui.ForegroundColor = "Gray"; $lengthmb }
 		}
 	} -Auto
 	Write-Host "`n---"
@@ -186,14 +185,15 @@ function Scan ($path, $logPaths, $pattern)
 			$msgArr | Group-Object Message | % { $messageGroupArr += $_.count }			
 			$messageGroup = $msgArr | Group-Object Message | % { $_.count }			
 			if ($messageGroup.length -gt 0){
-				if ($filteredArr.length -gt 0) { Write-Host -f Cyan ("`n[{0}{1}]`n" -f $filteredArr.length, " message types with multiple entries") }
+				$xMsg = 0
 				foreach ($groupCount in $messageGroupArr){ 
 					$filteredArr | % `
-					{ 	
-						Write-Host -f Green ("{0}]{1}" -f $_.Date, $_.Message) 
-						if ($groupCount -gt 1) { Write-Host -f Cyan "[$groupCount similar]" }
+					{ 	 
+						if ($groupCount -gt 1) { Write-Host -f Cyan "[$groupCount similar]"; $xMsg++ }
+						Write-Host -f Green ("{0}]{1}" -f $_.Date, $_.Message)
 					}
 				}
+				if ($xMsg -gt 0) { Write-Host -f Cyan ("`n[{0}{1}]`n" -f $xMsg, " message types with multiple entries") }
 			}
 		  }
 		}
