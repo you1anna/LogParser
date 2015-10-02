@@ -189,7 +189,9 @@ function Scan ($path, $logPaths, $pattern)
 				foreach ($groupCount in $messageGroupArr){ 
 					$filteredArr | % `
 					{ 	 
-						if ($groupCount -gt 1) { Write-Host -f Cyan "[$groupCount similar]"; $xMsg++ }
+						if ($groupCount -lt 5) { Write-Host -f Cyan "[$groupCount similar]"; $xMsg++ }
+						if ($groupCount -ge 5 -and $groupCount -lt 15) { Write-Host -f Yellow "[$groupCount similar]"; $xMsg++ }
+						if ($groupCount -ge 15) { Write-Host -f Red "[$groupCount similar]"; $xMsg++ }
 						Write-Host -f Green ("{0}]{1}" -f $_.Date, $_.Message)
 					}
 				}
