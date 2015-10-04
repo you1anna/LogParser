@@ -136,6 +136,7 @@ function Filter-Size
 	if ($logs.count -gt 0) 
 	{ 
 		$initialColor = $Host.ui.rawui.ForegroundColor
+		Write-Host -f Red "WARNING:"
 		Write-Host -f Gray "The following files are too large to monitor:"
 		$logs | sort length | 
 		ft -Property fullname, @{ label = "Size(mb)"; 
