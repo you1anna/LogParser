@@ -197,13 +197,11 @@ function Scan ($path, $logPaths, $pattern)
 					}
 				}
 				if ($xMsg -gt 0) { Write-Host -f Cyan ("`n[{0}{1}]`n" -f $xMsg, " message types with multiple entries") }
-			}
+				}
 		  }
 		}
 	}
 }
-
-
 
 
 
