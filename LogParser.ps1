@@ -42,9 +42,10 @@ $laterThan = [System.DateTime]::UtcNow.AddMinutes($minutesback * -1)
 $warnPattern = ".*WARN.*\s(?!$year).*[\s\D]*"
 $errorPattern = ".*ERROR.*\s(?!$year).*[\s\D]*"
 $guid = "[a-fA-F0-9]{8}-([a-fA-F0-9]{4}-){3}[a-fA-F0-9]{12}"
-$lv = '*LOG_VALUE*'
+$logval = '*LOG_VALUE*'
 $splitDelim = ']'
 $maxLogSize = 15MB
+$maxLogBytes = 150000
 
 if ($path) 
 {
@@ -132,19 +133,18 @@ function Get-Logs ($path)
 }
 function Filter-Size
 {
-	$logs = Gci -Path $path -Recurse  | ? {($_ -ne $null -and $_.Name -match "-error.log\b" -and $_.length -ge $maxLogSize)}
-	if ($logs.count -gt 0) 
+	$bigFiles = Gci -Path $path -Recurse  | ? {($_ -ne $null -and $_.Name -match "-error.log\b" -and $_.length -ge $maxLogBytes)}
+	if ($bigFiles.count -gt 0) 
 	{ 
 		$initialColor = $Host.ui.rawui.ForegroundColor
-		Write-Host -f Red "WARNING:"
-		Write-Host -f Gray "The following files are too large to monitor:"
-		$logs | sort length | 
-		ft -Property fullname, @{ label = "Size(mb)"; 
+		Write-Host -f Red "WARNING: The following files are too large to monitor"
+		$bigFiles | sort length |
+		ft -Property Fullname, @{ label = "Size(mb)"; 
 	  	Expression = 
 		{
 			$Host.ui.rawui.ForegroundColor = "Gray"; 
-			$lengthmb = ([math]::Round(($_.length / 1Mb),1))
-			if ($lengthmb -ge $maxLogSize) { $Host.ui.rawui.ForegroundColor = "Gray"; $lengthmb }
+			[int]$lengthmb = ([math]::Round(($_.length / 1Mb),1))
+			if ($lengthmb -ge 15) { $Host.ui.rawui.ForegroundColor = "Gray"; $lengthmb }
 		}
 	} -Auto
 	Write-Host "`n---"
@@ -153,7 +153,7 @@ function Filter-Size
 }
 function Filter-String ([string]$text)
 {
-	return $text -replace ('\d{6,}', $lv) -replace ('Job#\d+\D\d+', $lv) -replace ('# \d{3,}', $lv) -replace ($guid, $lv)
+	return $text -replace ('\d{6,}', $logval) -replace ('Job#\d+\D\d+', $logval) -replace ('# \d{3,}', $logval) -replace ($guid, $logval)
 }
 function Scan ($path, $logPaths, $pattern) 
 {
@@ -190,7 +190,7 @@ function Scan ($path, $logPaths, $pattern)
 				foreach ($groupCount in $messageGroupArr){ 
 					$filteredArr | % `
 					{ 	 
-						if ($groupCount -lt 5) { Write-Host -f Cyan "[$groupCount similar]"; $xMsg++ }
+						if ($groupCount -gt 1 -and $groupCount -lt 5) { Write-Host -f Cyan "[$groupCount similar]"; $xMsg++ }
 						if ($groupCount -ge 5 -and $groupCount -lt 15) { Write-Host -f Yellow "[$groupCount similar]"; $xMsg++ }
 						if ($groupCount -ge 15) { Write-Host -f Red "[$groupCount similar]"; $xMsg++ }
 						Write-Host -f Green ("{0}]{1}" -f $_.Date, $_.Message)
