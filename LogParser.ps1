@@ -1,10 +1,10 @@
 ﻿
-# LogParser v1.1 by Robin Miklinski
+# LogParser v1.1
 
-# group count incorrect /# with multiple entries
-# move following files size'' to single call - and fix?
-# filter-size needs fixing
-# set message group colour according to count
+# References: http://weblogs.asp.net/whaggard/powershell-script-to-find-strings-and-highlight-them-in-the-output
+
+# todo
+# search term param
 
 Set-ExecutionPolicy Unrestricted
 
