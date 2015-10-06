@@ -12,9 +12,9 @@ Set-ExecutionPolicy Unrestricted
     .SYNOPSIS 
       Scans log files for WARN and ERROR messages
     .EXAMPLE
-	> . .\logParserNew.ps1
+	> . .\logParser.ps1
 	> Start-Monitor -env staging -minutesback 30
-    > Start-Monitor -path D:\dev\Huddle\logs -purge 10
+    > Start-Monitor -path D:\dev\Huddle\logs -minutesback 10
 	 
     Run this script with either a path or environment param. 
 	Env will scan environment paths from a local text file
