@@ -45,7 +45,7 @@ $guid = "[a-fA-F0-9]{8}-([a-fA-F0-9]{4}-){3}[a-fA-F0-9]{12}"
 $logval = '*LOG_VALUE*'
 $splitDelim = ']'
 $maxLogSize = 15MB
-$maxLogBytes = 150000
+$maxLogBytes = 1500000
 
 if ($path) 
 {
