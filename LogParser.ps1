@@ -153,7 +153,7 @@ function Filter-Size
 }
 function Filter-String ([string]$text)
 {
-	return $text -replace ('\d{6,}', $logval) -replace ('Job#\d+\D\d+', $logval) -replace ('# \d{3,}', $logval) -replace ($guid, $logval)
+	return $text -replace ('\d{5,}', $logval) -replace ('Job#\d+\D\d+', $logval) -replace ('# \d{3,}', $logval) -replace ($guid, $logval)
 }
 function Scan ($path, $logPaths, $pattern) 
 {
