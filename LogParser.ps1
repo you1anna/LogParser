@@ -53,7 +53,7 @@ if ($path)
     {
         throw "Folder not found: $path"
     }
-	else { 
+	else {
 	Run-Scan 
 	Write-Host -f Cyan "`n`n-----------------------------------------"
 	Write-Host -f Cyan "Scanning..." $path "`n"
@@ -81,7 +81,7 @@ if ($purge)
 	$purgeresponse = Read-Host "`n" "Are you sure you want to purge " $path "y/n?"
 	if ($purgeresponse -eq "y") 
 	{
-		Get-ChildItem -Path $path -Recurse -Force | Where-Object { !$_.PSIsContainer } | Remove-Item
+		Get-ChildItem -Path $path -Recurse -Force | Where-Object { !$_.PSIsContainer } | Remove-Item -ErrorAction SilentlyContinue
 	}
 }
 } # start-monitor #
