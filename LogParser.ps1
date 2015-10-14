@@ -5,6 +5,8 @@
 
 # todo
 # search term param
+# choose warn or error
+# more size detect issues in staging?
 
 Set-ExecutionPolicy Unrestricted
 
