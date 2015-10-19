@@ -1,10 +1,12 @@
 ﻿
-# LogParser v1.1 by Robin Miklinski
+# LogParser v1.1
 
-# group count incorrect /# with multiple entries
-# move following files size'' to single call - and fix?
-# filter-size needs fixing
-# set message group colour according to count
+# References: http://weblogs.asp.net/whaggard/powershell-script-to-find-strings-and-highlight-them-in-the-output
+
+# todo
+# search term param
+# choose warn or error
+# more size detect issues in staging?
 
 Set-ExecutionPolicy Unrestricted
 
@@ -12,9 +14,9 @@ Set-ExecutionPolicy Unrestricted
     .SYNOPSIS 
       Scans log files for WARN and ERROR messages
     .EXAMPLE
-	> . .\logParserNew.ps1
+	> . .\logParser.ps1
 	> Start-Monitor -env staging -minutesback 30
-    > Start-Monitor -path D:\dev\Huddle\logs -purge 10
+    > Start-Monitor -path D:\dev\Huddle\logs -minutesback 10
 	 
     Run this script with either a path or environment param. 
 	Env will scan environment paths from a local text file
@@ -45,7 +47,7 @@ $guid = "[a-fA-F0-9]{8}-([a-fA-F0-9]{4}-){3}[a-fA-F0-9]{12}"
 $logval = '*LOG_VALUE*'
 $splitDelim = ']'
 $maxLogSize = 15MB
-$maxLogBytes = 150000
+$maxLogBytes = 1500000
 
 if ($path) 
 {
@@ -53,7 +55,7 @@ if ($path)
     {
         throw "Folder not found: $path"
     }
-	else { 
+	else {
 	Run-Scan 
 	Write-Host -f Cyan "`n`n-----------------------------------------"
 	Write-Host -f Cyan "Scanning..." $path "`n"
@@ -81,7 +83,7 @@ if ($purge)
 	$purgeresponse = Read-Host "`n" "Are you sure you want to purge " $path "y/n?"
 	if ($purgeresponse -eq "y") 
 	{
-		Get-ChildItem -Path $path -Recurse -Force | Where-Object { !$_.PSIsContainer } | Remove-Item
+		Get-ChildItem -Path $path -Recurse -Force | Where-Object { !$_.PSIsContainer } | Remove-Item -ErrorAction SilentlyContinue
 	}
 }
 } # start-monitor #
@@ -153,7 +155,7 @@ function Filter-Size
 }
 function Filter-String ([string]$text)
 {
-	return $text -replace ('\d{6,}', $logval) -replace ('Job#\d+\D\d+', $logval) -replace ('# \d{3,}', $logval) -replace ($guid, $logval)
+	return $text -replace ('\d{5,}', $logval) -replace ('Job#\d+\D\d+', $logval) -replace ('# \d{3,}', $logval) -replace ($guid, $logval)
 }
 function Scan ($path, $logPaths, $pattern) 
 {

@@ -1,0 +1,4 @@
+\\test-svc01\logs\People
+\\test-svc02\logs\People
+\\test-svc03\logs\People
+\\test-web01\logs\People
