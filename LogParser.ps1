@@ -179,7 +179,9 @@ function Scan ($path, $logPaths, $pattern)
 		if ($verbose) {$msgArr | % { Write-Host -f Green ("{0}]{1}" -f $_.Date, $_.Message) }
 		}
 		else 
-		{			
+		{	
+		if ($msgArr -ne $null)
+		{
 			$filteredArr = $msgArr | Group-Object Message | % { $_.Group | sort Date | Select -Last 1 }
 			
 			[array]$messageGroupArr = @()			
@@ -198,8 +200,10 @@ function Scan ($path, $logPaths, $pattern)
 				}
 				if ($xMsg -gt 0) { Write-Host -f Cyan ("`n[{0}{1}]`n" -f $xMsg, " message types with multiple entries") }
 				}
-		  }
+			}
+		  }		  
 		}
+		if ($msgArr -ne $null){$msgArr.clear()}
 	}
 }
 
