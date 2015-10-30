@@ -1,0 +1,6 @@
+\\animal\logs\Files
+\\animal\logs\Huddle.MyHuddle
+\\animal\logs\Identity
+\\animal\logs\people
+\\animal\logs\publishing
+\\animal\logs\Search

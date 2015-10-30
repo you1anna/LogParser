@@ -1,0 +1,6 @@
+D:\dev\huddle\log\Files
+D:\dev\huddle\log\Huddle.MyHuddle
+D:\dev\huddle\log\Identity
+D:\dev\huddle\log\people
+D:\dev\huddle\log\publishing
+D:\dev\huddle\log\Search

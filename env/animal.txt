@@ -1,3 +1,0 @@
-\\animal\logs\Files
-\\animal\logs\Huddle.MyHuddle
-\\animal\logs\Publishing

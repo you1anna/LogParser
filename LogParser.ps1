@@ -60,6 +60,14 @@ if ($path)
 	Write-Host -f Cyan "`n`n-----------------------------------------"
 	Write-Host -f Cyan "Scanning..." $path "`n"
 	}
+	if ($purge)
+{
+	$purgeresponse = Read-Host "`n" "Are you sure you want to purge " $path "y/n?"
+	if ($purgeresponse -eq "y") 
+	{
+		Get-ChildItem -Path $path -Recurse -Force | Where-Object { !$_.PSIsContainer } | Remove-Item -ErrorAction SilentlyContinue
+	}
+}
 }
 if ($env)
 {	
@@ -76,16 +84,16 @@ if ($env)
 		Run-Scan
 		Write-Host -f Cyan "`n`n-----------------------------------------"
 		Write-Host -f Cyan "Scanning..." $path "`n"}
+		if ($purge)
+		{
+		$purgeresponse = Read-Host "`n" "Are you sure you want to purge " $path "y/n?"
+		if ($purgeresponse -eq "y") 
+		{
+			Get-ChildItem -Path $path -Recurse -Force | Where-Object { !$_.PSIsContainer } | Remove-Item -ErrorAction SilentlyContinue
+		}
+}
 	}
 }	
-if ($purge)
-{
-	$purgeresponse = Read-Host "`n" "Are you sure you want to purge " $path "y/n?"
-	if ($purgeresponse -eq "y") 
-	{
-		Get-ChildItem -Path $path -Recurse -Force | Where-Object { !$_.PSIsContainer } | Remove-Item -ErrorAction SilentlyContinue
-	}
-}
 } # start-monitor #
 Function Run-Scan 
 {
@@ -193,11 +201,11 @@ function Scan ($path, $logPaths, $pattern)
 				$xMsg = 0
 				foreach ($groupCount in $messageGroupArr){ 
 					$filteredArr | % `
-					{ 	 
+					{ 	
+						Write-Host -f Green ("{0}]{1}" -f $_.Date, $_.Message)
 						if ($groupCount -gt 1 -and $groupCount -lt 5) { Write-Host -f Cyan "[$groupCount similar]"; $xMsg++ }
 						if ($groupCount -ge 5 -and $groupCount -lt 15) { Write-Host -f Yellow "[$groupCount similar]"; $xMsg++ }
 						if ($groupCount -ge 15) { Write-Host -f Red "[$groupCount similar]"; $xMsg++ }
-						Write-Host -f Green ("{0}]{1}" -f $_.Date, $_.Message)
 					}
 				}
 				if ($xMsg -gt 0) { Write-Host -f Cyan ("`n[{0}{1}]`n" -f $xMsg, " message types with multiple entries") }
