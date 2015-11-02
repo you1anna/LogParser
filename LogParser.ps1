@@ -5,8 +5,7 @@
 
 # todo
 # search term param
-# choose warn or error
-# more size detect issues in staging?
+# group counts are still way too high :-(
 
 Set-ExecutionPolicy Unrestricted
 
@@ -87,11 +86,11 @@ if ($env)
 		if ($purge)
 		{
 		$purgeresponse = Read-Host "`n" "Are you sure you want to purge " $path "y/n?"
-		if ($purgeresponse -eq "y") 
-		{
-			Get-ChildItem -Path $path -Recurse -Force | Where-Object { !$_.PSIsContainer } | Remove-Item -ErrorAction SilentlyContinue
+			if ($purgeresponse -eq "y") 
+			{
+				Get-ChildItem -Path $path -Recurse -Force | Where-Object { !$_.PSIsContainer } | Remove-Item -ErrorAction SilentlyContinue
+			}
 		}
-}
 	}
 }	
 } # start-monitor #
@@ -163,7 +162,7 @@ function Filter-Size
 }
 function Filter-String ([string]$text)
 {
-	return $text -replace ('\d{5,}', $logval) -replace ('Job#\d+\D\d+', $logval) -replace ('# \d{3,}', $logval) -replace ($guid, $logval)
+	return $text  -replace ($guid, $logval) -replace ('\d{5,}', $logval) -replace ('Job#\d+\D\d+', $logval) -replace ('# \d{3,}', $logval)
 }
 function Scan ($path, $logPaths, $pattern) 
 {

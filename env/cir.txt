@@ -1,0 +1,2 @@
+\\cir-svc01\logs
+\\cir-web01\logs
