@@ -6,6 +6,7 @@
 # todo
 # search term param
 # group counts are still way too high :-(
+# add purge list
 
 Set-ExecutionPolicy Unrestricted
 

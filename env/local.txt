@@ -1,3 +1,12 @@
+D:\dev\huddle\log\Huddle.Notifier
+D:\dev\huddle\log\Huddle.SearchAdapter
+D:\dev\huddle\log\Huddle.ServiceBus
+D:\dev\huddle\log\Huddle.EventPublisher
+D:\dev\huddle\log\Huddle.Api
+D:\dev\huddle\log\Huddle.Babble.EventHandlerService
+D:\dev\huddle\log\Huddle.MyHuddle.EventConsumer
+D:\dev\huddle\log\Huddle.Notifier
+D:\dev\huddle\log\Huddle.ServiceBus
 D:\dev\huddle\log\Files
 D:\dev\huddle\log\Huddle.MyHuddle
 D:\dev\huddle\log\Identity
