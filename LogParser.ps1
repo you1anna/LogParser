@@ -46,7 +46,7 @@ $errorPattern = ".*ERROR.*\s(?!$year).*[\s\D]*"
 $guid = "[a-fA-F0-9]{8}-([a-fA-F0-9]{4}-){3}[a-fA-F0-9]{12}"
 $logval = '*LOG_VALUE*'
 $splitDelim = ']'
-$maxLogSize = 15MB
+$maxLogSize = 25MB
 $maxLogBytes = 1500000
 
 if ($path) 
