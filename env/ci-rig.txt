@@ -1,0 +1,2 @@
+\\ci-svc01\logs
+\\ci-web01\logs

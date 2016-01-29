@@ -83,13 +83,20 @@ if ($env)
 		$path = $location
 		Run-Scan
 		Write-Host -f Cyan "`n`n-----------------------------------------"
-		Write-Host -f Cyan "Scanning..." $path "`n"}
+		Write-Host -f Cyan "Scanning..." $path "`n"
+		}
 		if ($purge)
 		{
-		$purgeresponse = Read-Host "`n" "Are you sure you want to purge " $path "y/n?"
-			if ($purgeresponse -eq "y") 
+			if(!(Test-Path $location -PathType Container))
 			{
-				Get-ChildItem -Path $path -Recurse -Force | Where-Object { !$_.PSIsContainer } | Remove-Item -ErrorAction SilentlyContinue
+        	throw "Folder not found: $location"
+			}
+			else {
+			$purgeresponse = Read-Host "`n" "Are you sure you want to purge " $path "y/n?"
+				if ($purgeresponse -eq "y") 
+				{
+					Get-ChildItem -Path $path -Recurse -Force | Where-Object { !$_.PSIsContainer } | Remove-Item -ErrorAction SilentlyContinue
+				}
 			}
 		}
 	}
