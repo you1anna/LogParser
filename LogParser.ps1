@@ -53,7 +53,7 @@ if ($path)
 {
     if(!(Test-Path $path -PathType Container))
     {
-        throw "Folder not found: $path"
+        Write-Host -foregroundcolour Red "Folder not found: $path"
     }
 	else {
 	Run-Scan 
@@ -77,7 +77,7 @@ if ($env)
 	{
 	    if(!(Test-Path $location -PathType Container))
     	{
-        	throw "Folder not found: $location"
+        	Write-Host -foregroundcolour Red "Folder not found: $location"
     	}
 		else { 
 		$path = $location
@@ -89,7 +89,7 @@ if ($env)
 		{
 			if(!(Test-Path $location -PathType Container))
 			{
-        	throw "Folder not found: $location"
+				Write-Host -foregroundcolour Red "Folder not found: $location"
 			}
 			else {
 			$purgeresponse = Read-Host "`n" "Are you sure you want to purge " $path "y/n?"
