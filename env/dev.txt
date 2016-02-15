@@ -5,6 +5,7 @@
 \\animal\logs\Huddle.Babble.EventHandlerService
 \\animal\logs\Huddle.BabbleApi
 \\animal\logs\Files
+\\animal\logs\Huddle.Tasks
 \\animal\logs\Huddle.ServiceBus
 \\animal\logs\Huddle.Api
 \\animal\logs\Huddle.EventPublisher
