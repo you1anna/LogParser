@@ -144,13 +144,13 @@ Function Get-FolderSize
 }
 function Get-Logs ($path)
 {		
-	$logPaths = Gci -Path $path -Recurse  | ? {($_ -ne $null -and $_.Name -match "-error.log\b" -and $_.LastWriteTime -gt $laterThan -and $_.length -lt $maxLogSize)}
+	$logPaths = Gci -Path $path -Recurse  | ? {($_ -ne $null -and $_.Name -match "error.log\b" -and $_.LastWriteTime -gt $laterThan -and $_.length -lt $maxLogSize)}
 
 	return $logPaths
 }
 function Filter-Size
 {
-	$bigFiles = Gci -Path $path -Recurse  | ? {($_ -ne $null -and $_.Name -match "-error.log\b" -and $_.length -ge $maxLogBytes)}
+	$bigFiles = Gci -Path $path -Recurse  | ? {($_ -ne $null -and $_.Name -match "error.log\b" -and $_.length -ge $maxLogBytes)}
 	if ($bigFiles.count -gt 0) 
 	{ 
 		$initialColor = $Host.ui.rawui.ForegroundColor
