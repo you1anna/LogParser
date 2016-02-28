@@ -1,3 +1,4 @@
+D:\dev\Huddle\log\trunk
 D:\dev\huddle\log\Huddle.Notifier
 D:\dev\huddle\log\Huddle.SearchAdapter
 D:\dev\huddle\log\Huddle.ServiceBus
